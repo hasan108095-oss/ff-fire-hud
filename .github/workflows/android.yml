@@ -22,9 +22,8 @@ jobs:
     - name: Setup Gradle Build Files
       run: |
         # মেইন বিল্ড ফাইল তৈরি
-        echo "plugins { id 'com.android.application' version '8.1.1' }" > build.gradle
-        echo "echo 'Settings Configured'" > settings.gradle
-        echo "include ':app'" >> settings.gradle
+        echo "plugins { id 'com.android.application' version '8.1.1' apply false }" > build.gradle
+        echo "include ':app'" > settings.gradle
         
         # app ফোল্ডারের বিল্ড ফাইল তৈরি
         mkdir -p app
