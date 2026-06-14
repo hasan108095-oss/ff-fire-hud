@@ -21,11 +21,11 @@ jobs:
         
     - name: Setup Full Gradle Android Environment
       run: |
-        # ১. গিটহাবের সার্ভারে অ্যান্ড্রয়েড SDK লাইসেন্স অটো-অ্যাকসেপ্ট করা
+        # ১. অ্যান্ড্রয়েড SDK লাইসেন্স অটো-অ্যাকসেপ্ট করা
         mkdir -p "$ANDROID_HOME/licenses"
         echo "24a33b117b51e9745b28d195df277b4489eff1d1" > "$ANDROID_HOME/licenses/android-sdk-license"
         
-        # ২. প্রজেক্টের মেইন সেটিংস ফাইল তৈরি (শুধুমাত্র এখানেই রিপোজিটরি থাকবে)
+        # ২. প্রজেক্টের মেইন সেটিংস ফাইল তৈরি
         cat << 'EOF' > settings.gradle
         pluginManagement {
             repositories {
@@ -45,11 +45,21 @@ jobs:
         include ':app'
         EOF
         
-        # ৩. মেইন বিল্ড গাইড ফাইল তৈরি (এখান থেকে রিপোজিটরি ব্লক সরানো হয়েছে)
+        # ৩. মেইন বিল্ড গাইড ফাইল তৈরি (প্লাগইন ডাউনলোডের জন্য এখানে রিপোজিটরি ফিরিয়ে আনা হয়েছে)
         cat << 'EOF' > build.gradle
         buildscript {
+            repositories {
+                google()
+                mavenCentral()
+            }
             dependencies {
                 classpath 'com.android.tools.build:gradle:8.1.1'
+            }
+        }
+        allprojects {
+            repositories {
+                google()
+                mavenCentral()
             }
         }
         EOF
