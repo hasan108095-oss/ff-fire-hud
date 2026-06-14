@@ -19,9 +19,13 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         
-    - name: Setup Gradle Build Files
+    - name: Setup Full Gradle Android Environment
       run: |
-        # মেইন সেটিংস ফাইল তৈরি (প্লাগইন সোর্স সহ)
+        # ১. গিটহাবের সার্ভারে অ্যান্ড্রয়েড SDK লাইসেন্স অটো-অ্যাকসেপ্ট করা
+        mkdir -p "$ANDROID_HOME/licenses"
+        echo "24a33b117b51e9745b28d195df277b4489eff1d1" > "$ANDROID_HOME/licenses/android-sdk-license"
+        
+        # ২. প্রজেক্টের মেইন সেটিংস ফাইল তৈরি
         cat << 'EOF' > settings.gradle
         pluginManagement {
             repositories {
@@ -37,21 +41,42 @@ jobs:
                 mavenCentral()
             }
         }
+        rootProject.name = "FF-Fire-HUD"
         include ':app'
         EOF
         
-        # মেইন বিল্ড ফাইল তৈরি
-        echo "plugins { id 'com.android.application' version '8.1.1' apply false }" > build.gradle
+        # ৩. মেইন বিল্ড গাইড ফাইল তৈরি
+        cat << 'EOF' > build.gradle
+        buildscript {
+            repositories {
+                google()
+                mavenCentral()
+            }
+            dependencies {
+                classpath 'com.android.tools.build:gradle:8.1.1'
+            }
+        }
+        allprojects {
+            repositories {
+                google()
+                mavenCentral()
+            }
+        }
+        EOF
         
-        # app ফোল্ডারের বিল্ড ফাইল তৈরি
+        # ৪. গ্লেডল প্রোপার্টিজ ফাইল তৈরি (মেমোরি প্রবলেম এড়াতে)
+        echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m" > gradle.properties
+        echo "android.useAndroidX=true" >> gradle.properties
+        
+        # ৫. app ফোল্ডারের আসল বিল্ড স্ক্রিপ্ট তৈরি
         mkdir -p app
         cat << 'EOF' > app/build.gradle
-        plugins {
-            id 'com.android.application'
-        }
+        apply plugin: 'com.android.application'
+
         android {
             namespace 'com.tanjil.hud'
             compileSdk 34
+            
             defaultConfig {
                 applicationId "com.tanjil.hud"
                 minSdk 21
@@ -59,14 +84,25 @@ jobs:
                 versionCode 1
                 versionName "1.0"
             }
+            
+            buildTypes {
+                release {
+                    minifyEnabled false
+                }
+            }
+        }
+
+        dependencies {
+            implementation 'androidx.appcompat:appcompat:1.6.1'
+            implementation 'com.google.android.material:material:1.9.0'
         }
         EOF
         
-    - name: Build Android APK
+    - name: Run Build Core
       run: |
         gradle wrapper --gradle-version 8.1.1
         chmod +x gradlew
-        ./gradlew assembleDebug
+        ./gradlew assembleDebug --stacktrace
 
     - name: Upload Finished APK
       uses: actions/upload-artifact@v4
