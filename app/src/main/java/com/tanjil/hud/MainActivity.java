@@ -1,4 +1,4 @@
-package com.example;
+package com.tanjil.hud;
 
 import android.content.Context;
 import android.content.Intent;
