@@ -25,7 +25,7 @@ jobs:
         mkdir -p "$ANDROID_HOME/licenses"
         echo "24a33b117b51e9745b28d195df277b4489eff1d1" > "$ANDROID_HOME/licenses/android-sdk-license"
         
-        # ২. প্রজেক্টের মেইন সেটিংস ফাইল তৈরি
+        # ২. প্রজেক্টের মেইন সেটিংস ফাইল তৈরি (শুধুমাত্র এখানেই রিপোজিটরি থাকবে)
         cat << 'EOF' > settings.gradle
         pluginManagement {
             repositories {
@@ -35,7 +35,7 @@ jobs:
             }
         }
         dependencyResolutionManagement {
-            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+            repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
             repositories {
                 google()
                 mavenCentral()
@@ -45,30 +45,20 @@ jobs:
         include ':app'
         EOF
         
-        # ৩. মেইন বিল্ড গাইড ফাইল তৈরি
+        # ৩. মেইন বিল্ড গাইড ফাইল তৈরি (এখান থেকে রিপোজিটরি ব্লক সরানো হয়েছে)
         cat << 'EOF' > build.gradle
         buildscript {
-            repositories {
-                google()
-                mavenCentral()
-            }
             dependencies {
                 classpath 'com.android.tools.build:gradle:8.1.1'
             }
         }
-        allprojects {
-            repositories {
-                google()
-                mavenCentral()
-            }
-        }
         EOF
         
-        # ৪. গ্লেডল প্রোপার্টিজ ফাইল তৈরি (মেমোরি প্রবলেম এড়াতে)
+        # ৪. গ্লেডল প্রোপার্টিজ ফাইল তৈরি
         echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m" > gradle.properties
         echo "android.useAndroidX=true" >> gradle.properties
         
-        # ৫. app ফোল্ডারের আসল বিল্ড স্ক্রিপ্ট তৈরি
+        # ৫. app ফোল্ডারের বিল্ড স্ক্রিপ্ট তৈরি
         mkdir -p app
         cat << 'EOF' > app/build.gradle
         apply plugin: 'com.android.application'
